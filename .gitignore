@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.whl
+
+# Virtual environment
+venv/
+.venv/
+env/
+.env
+backend/.env
+
+# PyTorch model weights
+backend/ml/weights/*.pt
+backend/ml/weights/*.bin
+backend/ml/weights/*.safetensors
+*.pt
+*.bin
+*.safetensors
+
+# HuggingFace cache
+.cache/
+huggingface/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_metadata/
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Data (raw scrape — large files)
+data/raw/*.jsonl
+data/raw/*.json
+data/raw/*.csv
+data/labeled/*.jsonl
+data/labeled/*.json
+data/labeled/*.csv
+
+# Logs
+*.log
+logs/
+
+# Test / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Claude Code
+.claude/
