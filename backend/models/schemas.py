@@ -8,6 +8,13 @@ class ScrapeRequest(BaseModel):
     url: str
     max_reviews: int = 100
 
+    @field_validator("url")
+    @classmethod
+    def must_be_google_maps(cls, v: str) -> str:
+        if "google.com/maps" not in v and "maps.app.goo.gl" not in v:
+            raise ValueError("url phải là link Google Maps")
+        return v
+
     @field_validator("max_reviews")
     @classmethod
     def cap_max(cls, v: int) -> int:

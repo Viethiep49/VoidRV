@@ -10,8 +10,8 @@
 | Unit tests | ✅ Xong |
 | Báo cáo backend | ✅ docs/bao-cao/01_backend.md |
 | Docs (6 files) | ✅ Đã sync (Phase 1) |
-| Alembic migrations | ❌ Phase 2 |
-| Integration tests | ❌ Phase 2 |
+| Alembic migrations | ✅ Xong |
+| Integration tests | ✅ Xong |
 | Frontend | ❌ Phase 3 |
 | ML fine-tune | ⏸ Phase 4 (defer) |
 | Deploy | ❌ Phase 5 |
@@ -26,11 +26,12 @@
 
 ---
 
-## Phase 2 — Backend Hardening `[ ]`
+## Phase 2 — Backend Hardening `[✅ DONE]`
 
-- [ ] Alembic migrations (4 bảng)
-- [ ] Integration tests (test_api.py)
-- [ ] Báo cáo: docs/bao-cao/02_backend-hardening.md
+- [x] Alembic migrations (4 bảng)
+- [x] Integration tests (test_api.py) — 9 tests
+- [x] URL validation cho ScrapeRequest
+- [x] Báo cáo: docs/bao-cao/02_backend-hardening.md
 
 ---
 
