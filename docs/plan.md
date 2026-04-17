@@ -12,7 +12,7 @@
 | Docs (6 files) | ✅ Đã sync (Phase 1) |
 | Alembic migrations | ✅ Xong |
 | Integration tests | ✅ Xong |
-| Frontend | ❌ Phase 3 |
+| Frontend | ✅ Xong |
 | ML fine-tune | ⏸ Phase 4 (defer) |
 | Deploy | ❌ Phase 5 |
 
@@ -35,12 +35,13 @@
 
 ---
 
-## Phase 3 — Frontend `[ ]`
+## Phase 3 — Frontend `[✅ DONE]`
 
-- [ ] Scaffold: Vite + React + TailwindCSS
-- [ ] Components: ScoreGauge, Badge, ScoreBreakdown, ReviewList, TimelineChart, RiskReport
-- [ ] Pages: `/` (scrape URL) · `/analyze` (demo) · `/restaurant/:slug` (dashboard)
-- [ ] Báo cáo: docs/bao-cao/03_frontend.md
+- [x] Scaffold: Vite + React + TailwindCSS + react-router-dom + Recharts
+- [x] Components: ScoreGauge, Badge, ScoreBreakdown, ReviewList, TimelineChart, RiskReport
+- [x] Pages: `/` (scrape URL + polling) · `/analyze` (demo) · `/restaurant/:slug` (dashboard)
+- [x] API modules: analyze.js, scrape.js, restaurant.js
+- [x] Báo cáo: docs/bao-cao/03_frontend.md
 
 ---
 
