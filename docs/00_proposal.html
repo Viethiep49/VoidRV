@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<h1>Đ ĐỒ ÁN CHUYÊN NGÀNH</h1>
+<blockquote>
+  <p><strong>Sinh viên thực hiện:</strong> Trương Viết Hiệp
+    <strong>MSSV:</strong> 2380600637
+    <strong>Trường:</strong> Đại học Công nghệ TP.HCM (HUTECH)
+    <strong>Khoa:</strong> Công nghệ Thông tin — Hệ thống Thông tin Ứng dụng
+
+</blockquote>
+<hr />
+<h2>1. TÊN ĐỀ TÀI</h2>
+<p><strong>VoidRV: Hệ thống xác định độ tin cậy review nhà hàng sử dụng phân tích nội dung (PhoBERT), nhận diện danh
+    tính reviewer (Stylometry), và đối chiếu đa nền tảng (Google Maps × Foody)</strong></p>
+<hr />
+<h2>2. GIỚI THIỆU VÀ ĐẶT VẤN ĐỀ</h2>
+<h3>2.1 Thực trạng và lý do chọn đề tài</h3>
+<p>Trong sự phát triển mạnh mẽ của ngành dịch vụ F&amp;B (Food and Beverage) tại Việt Nam cùng với sự bùng nổ của du
+  lịch tự túc, các đánh giá rà soát (online reviews) trên các nền tảng như Google Maps, Foody, hay TripAdvisor đã trở
+  thành yếu tố sống còn quyết định sự thành bại của cơ sở kinh doanh và định hướng lựa chọn của thực khách.</p>
+<p>Tuy nhiên, hệ sinh thái đánh giá trực tuyến đang bị thao túng nghiêm trọng bởi các vấn đề cốt lõi sau:
+  - <strong>Ngành công nghiệp Review Farm:</strong> Dịch vụ "tăng sao", "đẩy top" diễn ra công khai. Chỉ với vài trăm
+  nghìn đồng, chủ quán có quyền mua hàng trăm lượt đánh giá 5 sao kèm bình luận có cánh.
+  - <strong>Hiện tượng Review Bombing:</strong> Các chiến dịch tấn công hội đồng (đánh 1 sao hàng loạt) vì những mâu
+  thuẫn không liên quan đến chất lượng món ăn, phá hoại danh tiếng doanh nghiệp.
+  - <strong>Tài khoản rác (Ghost accounts):</strong> Các tài khoản vô danh được tự động hoá tạo ra chỉ nhằm mục đích
+  farm rating.</p>
+<p>Hiện nay, khi người dùng đọc một đánh giá trên Google Maps, họ không có bất kỳ công cụ đo lường nào hỗ trợ xác định
+  xem: <em>"Đây là thực khách trải nghiệm thật hay là một bài đăng dịch vụ?"</em> Đề tài được đề xuất nhằm giải quyết
+  trực tiếp nỗi đau (pain point) này của người sử dụng đầu cuối.</p>
+<h3>2.2 Tình hình nghiên cứu và khoảng trống (Research Gap)</h3>
+<p>Các nghiên cứu hiện tại về nhận diện Fake Review tại thị trường Việt Nam (điển hình như nhóm tác giả từ Đại học CNTT
+  (UIT) năm 2022 và 2024) tập trung chủ yếu vào miền dữ liệu <strong>Thương mại điện tử (Tiki, Shopee)</strong>. Cụ thể:
+  - Các hệ thống trước đó chỉ dựa vào sự kết hợp giữa xử lý ngôn ngữ NLP cơ bản và metadata trang cá nhân, không có tính
+  đa nền tảng.
+  - Miền dữ liệu F&amp;B (Nhà hàng, quán ăn) với ngữ cảnh đánh giá mang tính chất địa lý đặc thù và cảm tính cao vẫn
+  đang là một khoảng trống nghiên cứu lớn tại thị trường trong nước.</p>
+<h3>2.3 Câu hỏi nghiên cứu</h3>
+<ol>
+  <li>Làm thế nào để xây dựng một kiến trúc trí tuệ nhân tạo có năng lực kết hợp nội dung văn bản (Content), danh tính
+    ẩn (Identity) và bối cảnh (Context) nhằm đánh giá độ tin cậy một review?</li>
+  <li>Có thể phân tích sự chênh lệch (Gap) giữa Google Maps và một nền tảng bản địa như Foody.vn để sử dụng làm chỉ dấu
+    xác thực hành vi lạm phát đánh giá (Rating Inflation) không?</li>
+  <li>Các hành vi thao túng review thường có cấu trúc và tần suất như thế nào? (Temporal clusters).</li>
+</ol>
+<hr />
+<h2>3. MỤC TIÊU VÀ PHẠM VI NGHIÊN CỨU</h2>
+<h3>3.1 Mục tiêu tổng quát</h3>
+<p>Xây dựng một hệ thống phần mềm (Web Application) tự động trích xuất, phân tích và cho ra kết quả định lượng về "Độ
+  đáng tin cậy" (Trust Score) của một hàng quán dựa trên đường dẫn Google Maps do người dùng cung cấp. Hệ thống được trợ
+  lực bởi AI và phân tích phân cụm cung cấp góc nhìn đa chiều về chất lượng thực sự của nhà hàng.</p>
+<h3>3.2 Mục tiêu cụ thể</h3>
+<ol>
+  <li><strong>Xây dựng Data Pipeline:</strong> Tự động hoá thu thập dữ liệu review từ đường dẫn Google Maps và module
+    đối soát chéo (Entity Matching) tự động tìm kiếm quán đó trên Foody.</li>
+  <li><strong>Nghiên cứu &amp; Huấn luyện Model NLP:</strong> Fine-tune mô hình ngôn ngữ lớn PhoBERT với dữ liệu F&amp;B
+    chuyên ngành đạt chỉ số độ chính xác (F1-score) &gt; 80% trong việc phân loại review chân thật và review đáng ngờ.
+  </li>
+  <li><strong>Triển khai Identity Engine (Stylometry):</strong> Áp dụng kỹ thuật phân tích văn phong (Stylometry) sử
+    dụng TF-IDF và N-gram để nhận diện các dấu vết "sản xuất hàng loạt" của các bài tập review copy-paste.</li>
+  <li><strong>Phát triển thuật toán phát hiện bất thường:</strong> Nhóm các review theo mốc thời gian (Temporal
+    Clustering) và tính toán khoảng cách vector nhằm phát hiện hành vi thả sao hàng loạt.</li>
+  <li><strong>Xây dựng ứng dụng hoàn chỉnh:</strong> Frontend Trực Quan (Dashboard) thể hiện Điểm hiệu chỉnh (Adjusted
+    Rating), các bình luận đáng tin nhất và lý giải AI. Bệ phóng phục vụ người dùng chuẩn bị quyết định đến ăn.</li>
+</ol>
+<h3>3.3 Phạm vi nghiên cứu</h3>
+<ul>
+  <li><strong>Giới hạn miền ứng dụng:</strong> Đồ án tập trung giới hạn trên miền nhà hàng, ẩm thực, thức uống tại thị
+    trường Việt Nam bằng tiếng Việt.</li>
+  <li><strong>Giới hạn nền tảng thu thập:</strong> Dữ liệu nguồn chủ đạo từ Google Maps, đối soát với nền tảng Foody.vn.
+  </li>
+  <li><strong>Giới hạn thuật toán:</strong> Tập trung Phân tích văn bản (NLP) + Hành vi thời gian. (Tạm gác lại chức
+    năng Xử lý ảnh chụp để giới hạn khối lượng cho đồ án chuyên ngành).</li>
+</ul>
+<hr />
+<h2>4. HƯỚNG TIẾP CẬN VÀ PHƯƠNG PHÁP NGHIÊN CỨU</h2>
+<h3>4.1 Phương pháp thu thập dữ liệu (Scraping &amp; Aggregation)</h3>
+<p>Hệ thống sử dụng Bot tự động hoá (Playwright - Headless Browser) đóng giả người dùng truy xuất dữ liệu động (Dynamic
+  DOM) từ Google Maps, sau đó truyền thông tin tên quán và toạ độ đi tìm kiếm chéo trên trang Foody.vn thông qua
+  matching thuật toán Levenshtein Distance &amp; Toạ độ địa lý (Haversine Formula).</p>
+<h3>4.2 Cấu trúc phân tích đa tầng (VoidRV 3-Layer Architecture)</h3>
+<p>Sự độc đáo của đồ án nằm ở thuật toán Void Trust Engine chấm điểm qua 3 lăng kính đánh giá song song trước khi tổng
+  hợp ra điểm cuối cùng:</p>
+<ul>
+  <li>
+    <p><strong>Layer 1: Content Intelligence (Phân tích nội dung NLP - 40% trọng số)</strong>
+      Sử dụng pre-trained model <strong>PhoBERT</strong> của VinAI, fine-tune lại với tập dữ liệu spam/genuine review.
+      Layer này xử lý cảm xúc (sentiment), bóc tách thực thể (Mention món ăn, giá cả cụ thể - NER) và tìm sự phi logic
+      giữa số sao với nội dung text.</p>
+  </li>
+  <li>
+    <p><strong>Layer 2: Stylometry &amp; Identity Profiling (Nhận diện văn phong không profile - 30% trọng số)</strong>
+      Tài khoản Reviewer rác thường có văn phong đồng nhất. Hệ thống phân tích tần suất ký tự, quy tắc dấu câu, cấu trúc
+      n-gram để vẽ ra một "vân tay ngôn ngữ". Từ đó phát hiện cụm các tài khoản khác nhau nhưng cùng chung "một người
+      nhấn phím".</p>
+  </li>
+  <li>
+    <p><strong>Layer 3: Bối cảnh và Thống kê tần số (Context &amp; Forensics - 30% trọng số)</strong>
+      Phân tích biểu đồ thời gian gia tăng review (Time-series analysis). Nếu có khối lượng nhận xét tăng đột biến 500%
+      trong 2 tuần mà không nằm trong dịp lễ/sale thì hệ thống ghi nhận rủi ro Review Farm/Bombing.</p>
+  </li>
+</ul>
+<hr />
+<h2>5. CÔNG NGHỆ SỬ DỤNG (TECH STACK)</h2>
+<ol>
+  <li><strong>AI / Xử lý phân tích dữ liệu:</strong> </li>
+  <li>Framework: <code>PyTorch</code>, <code>HuggingFace Transformers</code>.</li>
+  <li>Thuật toán NLP: <code>PhoBERT</code>, Sentiment Analysis, NER.</li>
+  <li>Thống kê / Machine Learning: <code>scikit-learn</code> (DBSCAN Clustering, TF-IDF), thuật toán đối chiếu dữ liệu
+    <code>SimHash</code> (Datasketch).</li>
+  <li><strong>Backend Services &amp; Scraping:</strong></li>
+  <li>Framework API: <code>FastAPI</code> (Python). Tốc độ cao và tối ưu cho bất đồng bộ (ASync).</li>
+  <li>Scraping Engine: <code>Playwright</code>, <code>BeautifulSoup4</code>.</li>
+  <li><strong>Database:</strong> </li>
+  <li>Hệ quản trị CSDL quan hệ: <code>PostgreSQL</code> dành cho lưu trữ phân tích kết quả lâu dài.</li>
+  <li><strong>Trình bao biểu Diễn (Frontend):</strong> </li>
+  <li>Thư viện Web: <code>React 18</code> + <code>Vite</code> + <code>TailwindCSS</code> tạo Dashboard UI trực quan.
+    Biểu đồ dữ liệu dùng <code>Recharts</code>.</li>
+  <li><strong>Vận hành (Deployment):</strong> </li>
+  <li><code>Docker</code>, Hosting lên hạ tầng đám mây <code>Railway</code> hoặc <code>Render</code>.</li>
+</ol>
+<hr />
+<h2>6. TÀI LIỆU THAM KHẢO</h2>
+<p>[1] Co Van Dinh, Son T. Luu et al. (2022). <em>Detecting Spam Reviews on Vietnamese E-commerce Websites.</em>
+  arXiv:2207.14636
+  [2] Co Van Dinh, Son T. Luu. (2024). <em>Metadata Integration for Spam Reviews Detection on Vietnamese E-commerce
+    Websites.</em> arXiv:2405.13292
+  [3] Alessandro Gambetti, Qiwei Han. (2024). <em>AiGen-FoodReview: A Multimodal Dataset of Machine-Generated Restaurant
+    Reviews.</em> ICWSM 2024
+  [4] Nguyen, D.Q., &amp; Nguyen, A.T. (2020). <em>PhoBERT: Pre-trained language models for Vietnamese.</em> Findings of
+  EMNLP 2020
+  [5] Rayana, S., &amp; Akoglu, L. (2015). <em>Collective Opinion Spam Detection.</em> KDD 2015
+  [6] Tài liệu kỹ thuật HuggingFace, FastAPI, ReactJS.</p>
+</body>
+</html>

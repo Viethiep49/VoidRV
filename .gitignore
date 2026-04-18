@@ -79,3 +79,6 @@ htmlcov/
 
 # Claude Code
 .claude/
+
+# Worktrees
+.worktrees/
