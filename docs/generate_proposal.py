@@ -165,14 +165,19 @@ toc_items = [
     '   3.1. Kiến trúc tổng quan',
     '   3.2. Luồng xử lý',
     '   3.3. Cơ sở dữ liệu',
-    '4. Scoring Logic',
-    '   4.1. Content Score',
-    '   4.2. Behavior Score',
-    '   4.3. Trust Score',
-    '5. Data Pipeline',
-    '   5.1. Thu thập dữ liệu',
-    '   5.2. Gán nhãn',
-    '   5.3. Fine-tune PhoBERT',
+    '4. Phương pháp',
+    '   4.1. Kiến trúc đa tầng (Hybrid Architecture)',
+    '   4.2. Layer 1: Content Intelligence — PhoBERT + Rules',
+    '   4.3. Layer 2: Identity & Stylometry — Định danh không profile',
+    '   4.4. Layer 3: Context & Forensics — Clusters + Cross-platform gap',
+    '   4.5. Trust Engine: Logic Scoring & XAI Explainer',
+    '   4.6. Reviewer Archetypes & Cluster Detection',
+    '5. Thực nghiệm',
+    '   5.1. Môi trường thực nghiệm',
+    '   5.2. Kết quả fine-tune PhoBERT & Ablation Study',
+    '   5.3. Cross-platform Matching Performance',
+    '   5.4. Case study: Phân tích Inflation Gap thực tế',
+    '   5.5. Đánh giá tính giải thích (XAI) của hệ thống',
     '6. Công nghệ sử dụng',
     '7. Kế hoạch thực hiện',
     '8. Tài liệu tham khảo',
@@ -437,14 +442,16 @@ add_table(
 doc.add_page_break()
 
 # ============================================================
-# CHƯƠNG 4: SCORING LOGIC
+# CHƯƠNG 4: PHƯƠNG PHÁP
 # ============================================================
-add_heading_custom('CHƯƠNG 4: SCORING LOGIC', level=1)
+add_heading_custom('CHƯƠNG 4: PHƯƠNG PHÁP', level=1)
 
-add_heading_custom('4.1. Content Score (0–100)', level=2)
+add_heading_custom('4.1. Kiến trúc đa tầng (Hybrid Architecture)', level=2)
+add_paragraph('Kiến trúc gồm các tầng tích hợp cả AI, NLP, Stylometry và Entity Resolution.')
+
+add_heading_custom('4.2. Layer 1: Content Intelligence (0–100)', level=2)
 add_paragraph(
-    'Content Score đánh giá chất lượng và độ tin cậy của nội dung review. '
-    'Điểm được tính từ PhoBERT base score, sau đó điều chỉnh bằng các rule:'
+    'Sử dụng PhoBERT kết hợp Rule-based (Aspect-based Sentiment, SimHash).'
 )
 add_table(
     ['Yếu tố', 'Điều kiện', 'Điểm'],
@@ -454,39 +461,34 @@ add_table(
         ['Không có chi tiết cụ thể', 'Không đề cập món, giá, tên', '-15'],
         ['Có chi tiết cụ thể', 'Đề cập ≥ 2 loại chi tiết', '+10'],
         ['Review quá ngắn', '< 10 từ', '-30'],
-        ['Review ngắn', '10–19 từ', '-20'],
-        ['Review dài + chi tiết', '≥ 50 từ + có specificity', '+5'],
         ['Trùng lặp > 90%', 'SimHash similarity với review trong DB', '-40'],
-        ['Trùng lặp 80–90%', 'SimHash similarity', '-30'],
     ]
 )
 
-add_heading_custom('4.2. Behavior Score (0–100)', level=2)
+add_heading_custom('4.3. Layer 2: Identity & Stylometry (0–100)', level=2)
 add_paragraph(
-    'Behavior Score đánh giá độ tin cậy của người viết review. '
-    'Bắt đầu từ 100 điểm, trừ dần theo các vi phạm:'
+    'Xác định danh tính dựa trên văn phong (Stylometry) và Experience Markers.'
 )
 add_table(
     ['Yếu tố', 'Điều kiện', 'Penalty'],
     [
         ['Tài khoản rất mới', '< 7 ngày', '-30'],
-        ['Tài khoản mới', '7–89 ngày', '-10'],
-        ['Rất ít review', 'Tổng < 3', '-15'],
-        ['Ít review', 'Tổng 3–4', '-10'],
-        ['Chỉ review 1 quán', 'unique_restaurants = 1', '-20'],
-        ['Ít đa dạng', '2–3 quán', '-5'],
+        ['Ít review', 'Tổng < 3', '-15'],
         ['Spam tốc độ cao', '> 5 reviews/giờ', '-50'],
-        ['Tần suất cao', '> 3 reviews/giờ', '-40'],
-        ['Rating thiên lệch', '100% cho 5★ hoặc 1★', '-15'],
+        ['Stylometry similarity', 'Giống văn phong với các spam profiles khác', '-20'],
+        ['Thiếu Experience Markers', 'Không có các từ ngữ trải nghiệm bản địa', '-10'],
     ]
 )
 
-add_heading_custom('4.3. Trust Score', level=2)
-add_paragraph('Công thức tổng hợp:', bold=True)
-add_paragraph('Trust Score = 0.6 × Content Score + 0.4 × Behavior Score')
+add_heading_custom('4.4. Layer 3: Context & Forensics', level=2)
 add_paragraph(
-    'Trọng số 60-40 phản ánh việc nội dung review quan trọng hơn metadata người viết. '
-    'Trọng số này có thể điều chỉnh dựa trên kết quả thực nghiệm.'
+    'Phân tích theo Cluster, Temporal Burst, và Cross-platform gap (Google Maps vs Foody).'
+)
+
+add_heading_custom('4.5. Trust Engine: Logic Scoring & XAI Explainer', level=2)
+add_paragraph('Công thức tổng hợp đa tầng: Trust Score = 0.4 × Layer1 + 0.3 × Layer2 + 0.3 × Layer3')
+add_paragraph(
+    'Module XAI (Explainable AI) tự động generate Risk Summary dạng ngôn ngữ tự nhiên.'
 )
 add_paragraph('Phân loại badge:', bold=True)
 add_table(
@@ -501,53 +503,21 @@ add_table(
 doc.add_page_break()
 
 # ============================================================
-# CHƯƠNG 5: DATA PIPELINE
+# CHƯƠNG 5: THỰC NGHIỆM
 # ============================================================
-add_heading_custom('CHƯƠNG 5: DATA PIPELINE', level=1)
+add_heading_custom('CHƯƠNG 5: THỰC NGHIỆM', level=1)
 
-add_heading_custom('5.1. Thu thập dữ liệu', level=2)
+add_heading_custom('5.1. Môi trường thực nghiệm & Dataset', level=2)
 add_table(
     ['Nguồn', 'Phương pháp', 'Số lượng dự kiến', 'Mục đích'],
     [
         ['Google Maps', 'Playwright scraper', '1500–2000 reviews', 'Dataset chính'],
         ['Foody.vn', 'BeautifulSoup scraper', '500–1000 reviews', 'Bổ sung data tiếng Việt'],
         ['GPT-generated', 'Prompt GPT tạo fake reviews', '500 reviews', 'Augment fake class'],
-        ['Yelp Dataset', 'Kaggle (có sẵn)', 'Tham khảo', 'Benchmark methodology'],
     ]
-)
-add_paragraph(
-    'Tổng dataset dự kiến: 2000–3000 reviews từ 20–30 quán ăn phổ biến tại Đà Nẵng và TP.HCM.'
 )
 
-add_heading_custom('5.2. Gán nhãn (Labeling)', level=2)
-add_paragraph('Tiêu chí gán nhãn:', bold=True)
-add_table(
-    ['Nhãn', 'Tiêu chí', 'Ví dụ'],
-    [
-        ['Genuine (1)', 'Có chi tiết cụ thể, ngôn ngữ tự nhiên, có cả ưu và nhược',
-         '"Phở bò tái nạm ngon, nước dùng đậm vị, giá 55k hơi cao so với khu vực"'],
-        ['Fake (0)', 'Generic, quá ngắn, copy-paste, khen/chê thái quá không lý do',
-         '"Quán ngon lắm!!!" hoặc "Dở lắm, không bao giờ quay lại"'],
-    ]
-)
-add_paragraph(
-    'Dự kiến gán nhãn thủ công 500–1000 reviews bằng CLI labeling tool. '
-    'Bổ sung 500 fake reviews từ GPT-generated.'
-)
-add_paragraph('Dataset cuối cùng (~2000 samples):', bold=True)
-add_table(
-    ['Thành phần', 'Số lượng', 'Nhãn'],
-    [
-        ['Reviews genuine (label thủ công)', '~500', 'Genuine (1)'],
-        ['Reviews suspicious (label thủ công)', '~300', 'Fake (0)'],
-        ['GPT-generated fake reviews', '~500', 'Fake (0)'],
-        ['GPT-generated spam', '~200', 'Fake (0)'],
-        ['Reviews adapt từ Yelp dataset', '~500', 'Cả hai'],
-    ]
-)
-add_paragraph('Chia dữ liệu: 80% train (1600 samples) / 20% test (400 samples)')
-
-add_heading_custom('5.3. Fine-tune PhoBERT', level=2)
+add_heading_custom('5.2. Kết quả fine-tune PhoBERT & Ablation Study', level=2)
 add_paragraph('Cấu hình training:', bold=True)
 add_table(
     ['Tham số', 'Giá trị', 'Ghi chú'],
@@ -557,10 +527,6 @@ add_table(
         ['Epochs', '3–5', 'Tránh overfit với dataset nhỏ'],
         ['Batch size', '16', 'RTX 3060 12GB dư sức'],
         ['Learning rate', '2e-5', 'Standard cho BERT fine-tune'],
-        ['Max sequence length', '256 tokens', 'Review thường ngắn'],
-        ['Optimizer', 'AdamW', 'Default HuggingFace Trainer'],
-        ['VRAM sử dụng', '~4–6 GB', 'RTX 3060 12GB'],
-        ['Thời gian training', '~30 phút', '5 epochs trên 2000 samples'],
     ]
 )
 add_paragraph('Metrics đánh giá (target):', bold=True)
@@ -611,13 +577,16 @@ add_heading_custom('CHƯƠNG 7: KẾ HOẠCH THỰC HIỆN', level=1)
 add_table(
     ['Tuần', 'Công việc', 'Output'],
     [
-        ['1–2', 'Scrape data Google Maps + Foody (2000+ reviews)', 'Dataset thô (JSONL files)'],
-        ['3', 'Gán nhãn thủ công + generate fake reviews bằng GPT', 'Dataset hoàn chỉnh (~2000 labeled)'],
-        ['4', 'Fine-tune PhoBERT, đánh giá model', 'Model .pt + metrics report'],
-        ['5–6', 'Xây dựng Backend: FastAPI, scoring engine, database', 'API chạy được, Swagger docs'],
-        ['7–8', 'Xây dựng Frontend: 2 trang + UI components', 'Web app hoàn chỉnh'],
-        ['9', 'Tích hợp end-to-end, testing', 'Hệ thống chạy đầy đủ'],
-        ['10', 'Deploy, viết báo cáo, chuẩn bị demo', 'Link demo + báo cáo đồ án'],
+        ['1', 'Phase 0: Chuẩn bị, đọc papers, setup môi trường', 'Notes, EDA notebook, Repo git'],
+        ['2', 'Phase 1: Merge datasets, scrape Google Maps + Foody, label', 'Dataset files'],
+        ['3', 'Phase 1: Fine-tune PhoBERT (3-5 epochs)', 'Model .pt'],
+        ['4', 'Phase 1: Ablation study (1-layer vs 3-layer)', 'Notebook + metrics (F1 ≥ 0.83)'],
+        ['5', 'Phase 2: DB schema, Hybrid Scraper, Entity Matching', 'Scrapers + Matching chạy'],
+        ['6', 'Phase 2: Core Trust Engine, Cluster Detection, XAI Explainer', 'API endpoints hoàn chỉnh'],
+        ['7', 'Phase 3: Restaurant dashboard, Inflation Gap Chart, Timeline', 'Dashboard trực quan'],
+        ['8', 'Phase 3: XAI Breakdown UI, Top Trusted Reviews, Polish UI', 'Web app (Traveler-centric)'],
+        ['9', 'Phase 4: Tích hợp end-to-end, Unit tests, Edge cases', 'Test report, tests/'],
+        ['10', 'Phase 5: Deploy Docker Compose, báo cáo, slide demo', 'URL public, .docx + .pptx'],
     ]
 )
 
