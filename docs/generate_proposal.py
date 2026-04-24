@@ -194,9 +194,8 @@ page_break()
 # ============================================================
 h("1. TÊN ĐỀ TÀI", level=1)
 p(
-    "ReviewTrust (VoidRV): Hệ thống xác định độ tin cậy review nhà hàng tiếng Việt "
-    "dựa trên kiến trúc kết hợp đặc trưng văn bản (PhoBERT) và đặc trưng hành vi "
-    "reviewer (behavioral features).",
+    "ReviewTrust: Hệ thống xác định độ tin cậy review nhà hàng tiếng Việt "
+    "kết hợp PhoBERT và phân tích hành vi reviewer",
     bold=True,
 )
 
@@ -248,15 +247,33 @@ p(
 )
 
 h("2.3. Phạm vi ứng dụng", level=2)
+p("Phạm vi thực hiện:", bold=True)
+bullets([
+    "Web application (React 18 + FastAPI) với 2 trang: phân tích review đơn lẻ (demo) và dashboard tổng hợp quán.",
+    "Fine-tune PhoBERT-base (VinAI) cho binary classification (genuine vs fake) trên dữ liệu F&B tiếng Việt.",
+    "Rule-based behavior scoring dựa trên metadata reviewer (review count, frequency, burst, rating pattern).",
+    "Scrape dữ liệu từ Google Maps (chính) và Foody.vn (bổ sung) để xây dựng dataset và demo.",
+    "Copy-paste detection bằng SimHash.",
+    "Ngôn ngữ: tiếng Việt. Miền: nhà hàng / quán ăn / quán nước tại Việt Nam.",
+])
+p("Ngoài phạm vi (KHÔNG thực hiện):", bold=True)
+bullets([
+    "Không xử lý ảnh, GPS, Vision Transformer (ViT).",
+    "Không eKYC, không nhận dạng danh tính người dùng.",
+    "Không phát triển browser extension hay mobile application.",
+    "Không train model từ đầu — chỉ fine-tune pretrained PhoBERT.",
+    "Không kiểm duyệt tự động hay báo cáo vi phạm cho nền tảng.",
+    "Không mở rộng sang khách sạn, e-commerce, TripAdvisor, Yelp.",
+])
 table(
-    ["Trục phạm vi", "Trong phạm vi đồ án", "Ngoài phạm vi (defer)"],
+    ["Trục phạm vi", "Trong phạm vi", "Ngoài phạm vi"],
     [
         ["Ngôn ngữ", "Tiếng Việt", "Tiếng Anh, đa ngôn ngữ"],
-        ["Miền (domain)", "Nhà hàng / quán ăn / quán nước", "Khách sạn, E-commerce (Shopee, Tiki)"],
+        ["Miền", "Nhà hàng / quán ăn / quán nước", "Khách sạn, E-commerce"],
         ["Nguồn dữ liệu", "Google Maps (chính); Foody.vn (bổ sung)", "TripAdvisor, Yelp, Facebook"],
-        ["Modality", "Văn bản + metadata số", "Ảnh (CV), Video, Audio, GPS"],
+        ["Modality", "Văn bản + metadata số", "Ảnh, Video, GPS"],
         ["Hình thức sản phẩm", "Web Application (SPA)", "Mobile app, browser extension"],
-        ["Nghiệp vụ", "Phân tích độ tin cậy + dashboard quán", "Kiểm duyệt tự động, báo cáo vi phạm"],
+        ["ML approach", "Fine-tune pretrained PhoBERT", "Train từ đầu, LLM API runtime"],
     ],
 )
 
@@ -282,20 +299,73 @@ page_break()
 # ============================================================
 h("3. HIỆN TRẠNG BÀI TOÁN VÀ KHẢO SÁT NGHIÊN CỨU LIÊN QUAN", level=1)
 
-h("3.1. Dòng chảy nghiên cứu Fake Review Detection", level=2)
+h("3.1. Phân loại nhóm phương pháp và dòng chảy nghiên cứu", level=2)
 p(
-    "Bài toán FRD bắt đầu từ công trình tiên phong của Jindal & Liu (2008) — định nghĩa "
-    "3 loại opinion spam (untruthful / brand-only / non-review) và đặt nền móng bằng "
-    "Logistic Regression trên đặc trưng duplicate content. Từ đó đến nay, giới nghiên "
-    "cứu đã trải qua 4 giai đoạn:"
+    "Để xác định khoảng trống một cách có hệ thống, nghiên cứu được khảo sát theo "
+    "5 nhóm phương pháp chính:"
+)
+p("Nhóm 1 — Linguistic + ML cổ điển (SVM, LR, Naive Bayes):", bold=True)
+p(
+    "Khai thác đặc trưng ngôn ngữ học thủ công: TF-IDF, n-gram, POS tag, độ dài câu. "
+    "Đại diện: Ott et al. (2011) đạt 89,8% accuracy trên dataset hotel deception."
 )
 table(
-    ["Giai đoạn", "Hướng chủ đạo", "Đại diện"],
+    ["Ưu điểm", "Hạn chế với bài toán"],
     [
-        ["2008–2013", "Linguistic features + ML cổ điển (SVM, LR, NB)", "Jindal & Liu (2008); Ott et al. (2011)"],
-        ["2013–2017", "Behavior features + Graph-based", "Mukherjee et al. (2013); Rayana & Akoglu (2015) — SpEagle"],
-        ["2017–2022", "Deep Learning (CNN, LSTM, BERT) + Multi-feature fusion", "Shehnepoor et al. (NetSpam); Barbado et al."],
-        ["2023–2026", "LLM-generated review detection + Multimodal + Human-in-the-loop", "Luo et al. (2026); Xu & Huo (2026); Mewada & Dewang (2026)"],
+        ["Đơn giản, giải thích được; inference nhanh", "Không capture ngữ nghĩa sâu; F1 giảm khi domain shift; không có behavioral; không phù hợp tiếng Việt"],
+    ],
+)
+p("Nhóm 2 — Graph-based / Network-based:", bold=True)
+p(
+    "Mô hình mạng lưới reviewer–review–sản phẩm. Đại diện: SpEagle (Rayana & Akoglu 2015) "
+    "dùng belief propagation trên heterogeneous graph."
+)
+table(
+    ["Ưu điểm", "Hạn chế"],
+    [
+        ["Phát hiện cụm review farm; semi-supervised", "Cần network lớn; không khai thác text; khó tích hợp web app"],
+    ],
+)
+p("Nhóm 3 — Deep Learning tuần tự (CNN, LSTM, BiLSTM):", bold=True)
+p(
+    "Học đặc trưng tự động từ chuỗi text. Đại diện: NetSpam (Shehnepoor et al., 2017)."
+)
+table(
+    ["Ưu điểm", "Hạn chế"],
+    [
+        ["Không cần feature engineering; capture sequential pattern", "Không có pre-training mạnh cho tiếng Việt; chỉ text; hiệu quả thấp hơn transformer"],
+    ],
+)
+p("Nhóm 4 — Pre-trained Language Models (BERT, RoBERTa, PhoBERT):", bold=True)
+p(
+    "Fine-tune transformer. Đại diện: DeceptiveBERT (Bhatt 2022); UIT Vietnamese "
+    "(Dinh & Luu 2022, 2024) dùng PhoBERT cho e-commerce."
+)
+table(
+    ["Ưu điểm", "Hạn chế"],
+    [
+        ["SOTA semantic; PhoBERT phù hợp tiếng Việt; transfer learning mạnh", "Content-only; VN chỉ có e-commerce, chưa F&B; thiếu XAI"],
+    ],
+)
+p("Nhóm 5 — Hybrid / Multimodal / LLM-aware (trọng tâm, 2022–2026):", bold=True)
+p(
+    "Kết hợp text + behavioral metadata + ảnh hoặc LLM phát hiện AI-generated review. "
+    "Đại diện: ConvRoBERTa (Mewada 2026), IFML (Xu & Huo 2026), Luo et al. (2026)."
+)
+table(
+    ["Ưu điểm", "Hạn chế"],
+    [
+        ["Accuracy cao nhất; tích hợp đa nguồn; có XAI", "Chủ yếu tiếng Anh; cần ảnh hoặc LLM API; chưa có F&B VN"],
+    ],
+)
+p("Tổng hợp theo thời gian:", bold=True)
+table(
+    ["Giai đoạn", "Nhóm phương pháp", "F1 điển hình", "Khoảng trống"],
+    [
+        ["2008–2013", "Nhóm 1 (Linguistic + ML)", "0,65–0,80", "Không behavioral; không deep learning"],
+        ["2014–2017", "Nhóm 2 (Graph) + Nhóm 3 (DL)", "0,78–0,89", "Chưa dùng pre-trained LM"],
+        ["2018–2022", "Nhóm 4 (BERT/RoBERTa)", "0,84–0,90", "Content-only; không F&B VN; không XAI"],
+        ["2023–2026", "Nhóm 5 (Hybrid/LLM/Multimodal)", "0,88–0,94", "Tiếng Anh; cần ảnh/LLM API; chưa có cho tiếng Việt F&B"],
     ],
 )
 
@@ -397,19 +467,32 @@ table(
     ],
 )
 
-h("3.5. Khoảng trống nghiên cứu (Research Gap)", level=2)
-p("Từ khảo sát trên, xác định 4 khoảng trống rõ ràng:")
+h("3.5. Khoảng trống nghiên cứu và suy ra Mục tiêu", level=2)
+p("Từ khảo sát 5 nhóm phương pháp, xác định 4 khoảng trống rõ ràng:")
 bullets([
-    "Ngôn ngữ × Miền chưa được phủ: Chưa có công trình công bố mô hình FRD riêng cho "
-    "tiếng Việt + miền F&B.",
-    "Khai thác đồng thời Content + Behavior còn hạn chế trong các nghiên cứu VN: Dinh "
-    "(2024) có metadata nhưng đơn giản; Mewada (2026) có fuse nhưng tiếng Anh.",
-    "Thiếu khả năng giải thích (XAI): Hầu hết model Vietnamese FRD chỉ trả về label, "
-    "không có “vì sao”. Xu & Huo (2026) chứng minh XAI tăng trust người dùng nhưng chưa "
-    "có cho tiếng Việt.",
-    "Thiếu sản phẩm đầu-cuối cho end-user: Các paper chỉ dừng ở model, không có web "
-    "app cho người dùng cuối dùng trực tiếp.",
+    "Gap 1 — Ngôn ngữ x Miền chưa được phủ: Chưa có công trình công bố mô hình FRD riêng "
+    "cho tiếng Việt + miền F&B. Nhóm 4 (PhoBERT) chỉ có e-commerce; Nhóm 5 toàn tiếng Anh.",
+    "Gap 2 — Content + Behavior còn hạn chế trong VN: Dinh (2024) có metadata nhưng đơn "
+    "giản; Mewada (2026) có fuse tốt nhưng tiếng Anh. VN vẫn chủ yếu dừng ở content-only.",
+    "Gap 3 — Thiếu XAI: Hầu hết model FRD tiếng Việt chỉ trả về label, thiếu lý do giải "
+    "thích. Xu & Huo (2026) chứng minh XAI tăng trust người dùng nhưng chưa có cho VN.",
+    "Gap 4 — Thiếu sản phẩm web cho end-user: Tất cả nhóm phương pháp dừng ở model, "
+    "không có web app cho traveler dùng trực tiếp.",
 ])
+p("Bảng ánh xạ Khoảng trống — Mục tiêu cụ thể:", bold=True)
+table(
+    ["Khoảng trống", "Mục tiêu giải quyết"],
+    [
+        ["Gap 1: Chưa có dataset F&B tiếng Việt có nhãn", "MT1 — Xây dựng data pipeline + dataset ~3.000 review"],
+        ["Gap 1: Chưa có model FRD fine-tune cho F&B VN", "MT2 — Fine-tune PhoBERT-base trên dataset tự xây"],
+        ["Gap 2: Content-only, thiếu behavioral features", "MT3, MT4 — Triển khai Content Module + Behavior Module"],
+        ["Gap 2: Thiếu cơ chế fuse có trọng số tối ưu", "MT5 — Trust Engine 0,6 x Content + 0,4 x Behavior"],
+        ["Gap 3: Không có XAI/giải thích", "MT5 — Mỗi review có explanation >= 3 lý do"],
+        ["Gap 4: Không có sản phẩm web cho end-user", "MT6 — Web application React hoạt động end-to-end"],
+        ["Validation đóng góp từng layer", "MT7 — Ablation study so với baseline"],
+        ["Kiểm chứng thực tế", "MT8 — Case study 3-5 quán thật tại HCM"],
+    ],
+)
 
 h("3.6. Phương pháp kế thừa và hướng phát triển", level=2)
 p(
@@ -519,12 +602,21 @@ bullets([
     "Nếu LLM khớp heuristic → giữ nhãn; nếu lệch → chuyển tầng 3 arbitration.",
 ])
 p("Tầng 3 — Manual Review (người gán nhãn chuẩn):", bold=True)
+p("Người thực hiện gán nhãn:", bold=True)
 bullets([
-    "SV gán nhãn thủ công 100% test set (~500 review) và các review LLM/rule mâu thuẫn "
-    "(~300–500 review).",
-    "1 review được ≥ 2 lần review độc lập (SV + LLM) → gold label.",
-    "Tính Cohen’s Kappa giữa heuristic / LLM / manual để báo cáo độ tin cậy gán nhãn "
-    "(kỳ vọng κ ≥ 0,70 — substantial agreement).",
+    "Sinh viên thực hiện (Trương Viết Hiệp): gán nhãn độc lập ~500 review tập test và "
+    "~300–500 review có mâu thuẫn từ tầng 1 & 2.",
+    "Một sinh viên khác cùng khoa (annotator thứ 2): gán nhãn độc lập cùng 500 review "
+    "tập test để tính inter-annotator agreement — không nhìn nhãn của annotator 1.",
+    "Giảng viên hướng dẫn: kiểm tra ngẫu nhiên ~50–100 review borderline, xác nhận "
+    "guideline, quyết định cuối khi 2 annotator bất đồng (arbitration).",
+])
+p("Quy trình:", bold=True)
+bullets([
+    "Mỗi review được gán nhãn độc lập bởi ≥ 2 người → gold label.",
+    "Nếu 2 annotator bất đồng → đưa lên giảng viên hướng dẫn quyết định.",
+    "Tính Cohen’s Kappa giữa 2 annotator trên 500 review tập test. Kỳ vọng κ ≥ 0,70 "
+    "(substantial agreement). Kết quả κ sẽ báo cáo trong quyển đồ án.",
 ])
 
 h("4.4. Đặc điểm và thống kê dự kiến", level=2)

@@ -11,7 +11,7 @@
 
 ## 1. TÊN ĐỀ TÀI
 
-**ReviewTrust (VoidRV): Hệ thống xác định độ tin cậy review nhà hàng tiếng Việt dựa trên kiến trúc kết hợp đặc trưng văn bản (PhoBERT) và đặc trưng hành vi reviewer (behavioral features).**
+**ReviewTrust: Hệ thống xác định độ tin cậy review nhà hàng tiếng Việt kết hợp PhoBERT và phân tích hành vi reviewer**
 
 ---
 
@@ -37,14 +37,33 @@ Theo báo cáo của chính phủ Anh (2023) được trích dẫn trong Xu & Hu
 
 ### 2.3. Phạm vi ứng dụng
 
-| Trục phạm vi | Trong phạm vi đồ án | Ngoài phạm vi (defer) |
-|-------------|--------------------|----------------------|
+**Phạm vi thực hiện:**
+
+- Web application (React 18 + FastAPI) với 2 trang chính: phân tích review đơn lẻ (demo) và dashboard tổng hợp quán.
+- Fine-tune **PhoBERT-base** (VinAI) cho bài toán binary classification (genuine vs fake review) trên dữ liệu F&B tiếng Việt.
+- Rule-based **behavior scoring** dựa trên metadata người viết review (review count, frequency, burst, rating pattern).
+- Scrape dữ liệu từ **Google Maps** (chính) và **Foody.vn** (bổ sung) để xây dựng dataset và demo.
+- **Copy-paste detection** bằng SimHash (phát hiện review sao chép).
+- Chỉ xử lý văn bản tiếng Việt + metadata số; ngôn ngữ duy nhất là tiếng Việt.
+- Phạm vi miền: nhà hàng / quán ăn / quán nước tại Việt Nam.
+
+**Ngoài phạm vi (KHÔNG thực hiện):**
+
+- Không xử lý ảnh, GPS, Vision Transformer (ViT).
+- Không eKYC, không nhận dạng danh tính người dùng.
+- Không phát triển browser extension hay mobile application.
+- Không train model từ đầu (từ random weights) — chỉ fine-tune pretrained PhoBERT.
+- Không kiểm duyệt tự động hay báo cáo vi phạm cho nền tảng.
+- Không mở rộng sang khách sạn, e-commerce (Shopee, Tiki), TripAdvisor, Yelp.
+
+| Trục phạm vi | Trong phạm vi | Ngoài phạm vi |
+|-------------|--------------|---------------|
 | **Ngôn ngữ** | Tiếng Việt | Tiếng Anh, đa ngôn ngữ |
-| **Miền (domain)** | Nhà hàng / quán ăn / quán nước | Khách sạn, E-commerce (Shopee, Tiki) |
+| **Miền** | Nhà hàng / quán ăn / quán nước | Khách sạn, E-commerce |
 | **Nguồn dữ liệu** | Google Maps (chính); Foody.vn (bổ sung) | TripAdvisor, Yelp, Facebook |
-| **Modality** | Văn bản + metadata số (text + numerical) | Ảnh (CV), Video, Audio, GPS |
+| **Modality** | Văn bản + metadata số | Ảnh, Video, GPS |
 | **Hình thức sản phẩm** | Web Application (SPA) | Mobile app, browser extension |
-| **Nghiệp vụ** | Phân tích độ tin cậy + dashboard quán | Kiểm duyệt tự động, báo cáo vi phạm |
+| **ML approach** | Fine-tune pretrained PhoBERT | Train từ đầu, LLM API runtime |
 
 ### 2.4. Lý do chọn đề tài
 
@@ -58,16 +77,68 @@ Theo báo cáo của chính phủ Anh (2023) được trích dẫn trong Xu & Hu
 
 ## 3. HIỆN TRẠNG BÀI TOÁN VÀ KHẢO SÁT NGHIÊN CỨU LIÊN QUAN
 
-### 3.1. Dòng chảy nghiên cứu Fake Review Detection
+### 3.1. Phân loại nhóm phương pháp và dòng chảy nghiên cứu
 
-Bài toán FRD bắt đầu từ công trình tiên phong của **Jindal & Liu (2008)** — định nghĩa 3 loại opinion spam (untruthful / brand-only / non-review) và đặt nền móng bằng Logistic Regression trên đặc trưng duplicate content. Từ đó đến nay, giới nghiên cứu đã trải qua 4 giai đoạn:
+Bài toán FRD đã được nghiên cứu từ đầu những năm 2000, trải qua nhiều giai đoạn tiến hóa. Để xác định khoảng trống, cần khảo sát theo **nhóm phương pháp** thay vì chỉ theo thời gian:
 
-| Giai đoạn | Hướng chủ đạo | Đại diện |
-|-----------|--------------|----------|
-| 2008–2013 | Linguistic features + ML cổ điển (SVM, LR, NB) | Jindal & Liu (2008); Ott et al. (2011) |
-| 2013–2017 | Behavior features + Graph-based | Mukherjee et al. (2013); Rayana & Akoglu (2015) — SpEagle |
-| 2017–2022 | Deep Learning (CNN, LSTM, BERT) + Multi-feature fusion | Shehnepoor et al. (NetSpam); Barbado et al. |
-| 2023–2026 | LLM-generated review detection + Multimodal + Human-in-the-loop | Luo et al. (2026); Xu & Huo (2026); Mewada & Dewang (2026) |
+#### Nhóm 1 — Linguistic + ML cổ điển (SVM, LR, Naive Bayes)
+
+Khai thác đặc trưng ngôn ngữ học thủ công: TF-IDF, n-gram, POS tag, độ dài câu, tần suất từ. Đại diện: Ott et al. (2011) đạt 89,8% accuracy trên dataset hotel deception (crowdsourced); Jindal & Liu (2008) dùng LR trên duplicate content.
+
+| Ưu điểm | Hạn chế với bài toán của chúng ta |
+|---------|----------------------------------|
+| Đơn giản, giải thích được | Không capture ngữ nghĩa sâu; F1 giảm mạnh khi domain shift |
+| Ít dữ liệu | Không tích hợp behavioral metadata |
+| Inference nhanh | Không phù hợp tiếng Việt (morphology khác tiếng Anh) |
+
+#### Nhóm 2 — Graph-based / Network-based
+
+Mô hình mạng lưới reviewer–review–sản phẩm để phát hiện cụm bất thường. Đại diện: SpEagle (Rayana & Akoglu 2015) dùng belief propagation trên heterogeneous graph.
+
+| Ưu điểm | Hạn chế |
+|---------|---------|
+| Phát hiện nhóm review farm | Cần network đủ lớn (khó với dataset nhỏ) |
+| Tận dụng quan hệ reviewer | Không khai thác nội dung text |
+| Không cần nhãn (semi-supervised) | Khó triển khai web app |
+
+#### Nhóm 3 — Deep Learning tuần tự (CNN, LSTM, BiLSTM)
+
+Học đặc trưng tự động từ chuỗi text. Đại diện: NetSpam (Shehnepoor et al., 2017); các biến thể CNN+LSTM trên Yelp.
+
+| Ưu điểm | Hạn chế |
+|---------|---------|
+| Capture sequential pattern | Không có pre-training mạnh cho tiếng Việt |
+| Không cần feature engineering | Chỉ text; bỏ qua behavioral |
+| | Hiệu quả thấp hơn transformer |
+
+#### Nhóm 4 — Pre-trained Language Models (BERT, RoBERTa, PhoBERT)
+
+Fine-tune transformer pre-trained trên corpus lớn. Đại diện: DeceptiveBERT (Bhatt 2022); UIT Vietnamese (Dinh & Luu 2022, 2024) dùng PhoBERT cho e-commerce.
+
+| Ưu điểm | Hạn chế |
+|---------|---------|
+| SOTA semantic understanding | Chủ yếu content-only, bỏ qua behavioral |
+| PhoBERT phù hợp tiếng Việt | Nghiên cứu VN chỉ có miền e-commerce, chưa có F&B |
+| Transfer learning mạnh | Thiếu giải thích (XAI) |
+
+#### Nhóm 5 — Hybrid / Multimodal / LLM-aware (2022–2026, trọng tâm)
+
+Kết hợp text + behavioral metadata + ảnh; hoặc dùng LLM phát hiện review AI-generated. Đại diện: ConvRoBERTa (Mewada 2026), IFML (Xu & Huo 2026), Luo et al. (2026), Zhang et al. (2025 — online learning).
+
+| Ưu điểm | Hạn chế |
+|---------|---------|
+| Tích hợp đa nguồn → accuracy cao nhất | Chủ yếu tiếng Anh; chưa có F&B VN |
+| Có cơ chế giải thích (XAI) | Cần ảnh hoặc LLM API runtime (chi phí cao) |
+| Phát hiện AI-generated reviews | Dataset nhãn phức tạp |
+
+**Tổng hợp dòng chảy theo thời gian:**
+
+| Giai đoạn | Nhóm phương pháp chủ đạo | F1 điển hình | Khoảng trống |
+|-----------|--------------------------|--------------|-------------|
+| 2008–2013 | Nhóm 1 (Linguistic + ML) | 0.65–0.80 | Không behavioral; không deep learning |
+| 2014–2017 | Nhóm 2 (Graph) + Nhóm 3 (DL) | 0.78–0.89 | Chưa dùng pre-trained LM |
+| 2018–2022 | Nhóm 4 (BERT/RoBERTa) | 0.84–0.90 | Content-only; không F&B VN; không XAI |
+| 2023–2026 | Nhóm 5 (Hybrid/LLM/Multimodal) | 0.88–0.94 | Tiếng Anh; cần ảnh/LLM API; chưa có cho tiếng Việt F&B |
 
 ### 3.2. Các nghiên cứu quốc tế tiêu biểu (khảo sát 5 paper SCI/SCIE 2025–2026)
 
@@ -133,14 +204,27 @@ Bài toán FRD bắt đầu từ công trình tiên phong của **Jindal & Liu (
 | Luo (AdaBoost + outlier) | 2026 | AI-generated detection | SOTA | Tiếng Anh, không có behavior |
 | UIT Vietnamese (Dinh 2024) | 2024 | PhoBERT + metadata | ~0.82 | E-commerce, không F&B |
 
-### 3.5. Khoảng trống nghiên cứu (Research Gap)
+### 3.5. Khoảng trống nghiên cứu (Research Gap) và suy ra Mục tiêu
 
-Từ khảo sát trên, xác định 4 khoảng trống rõ ràng:
+Từ khảo sát 5 nhóm phương pháp trên, xác định 4 khoảng trống rõ ràng:
 
-1. **Ngôn ngữ × Miền chưa được phủ:** Chưa có công trình nào công bố mô hình FRD riêng cho **tiếng Việt + miền F&B**.
-2. **Khai thác đồng thời Content + Behavior còn hạn chế trong các nghiên cứu VN:** Dinh (2024) có metadata nhưng đơn giản; Mewada (2026) có fuse nhưng tiếng Anh.
-3. **Thiếu khả năng giải thích (XAI):** Hầu hết model Vietnamese FRD chỉ trả về label, không có "vì sao". Xu & Huo (2026) đã chứng minh XAI tăng trust người dùng nhưng chưa có cho tiếng Việt.
-4. **Thiếu sản phẩm đầu-cuối cho end-user:** Các paper chỉ dừng ở model, không có web app cho người dùng cuối (traveler) dùng trực tiếp.
+1. **Ngôn ngữ × Miền chưa được phủ:** Chưa có công trình nào công bố mô hình FRD riêng cho **tiếng Việt + miền F&B**. Nhóm 4 (PhoBERT) chỉ có e-commerce; Nhóm 5 toàn tiếng Anh.
+2. **Khai thác đồng thời Content + Behavior còn hạn chế trong nghiên cứu VN:** Dinh (2024) có metadata nhưng đơn giản; Mewada (2026) có fuse tốt nhưng tiếng Anh. Nghiên cứu VN vẫn chủ yếu dừng ở Nhóm 4 (content-only).
+3. **Thiếu khả năng giải thích (XAI):** Hầu hết model FRD tiếng Việt chỉ trả về label, không có "vì sao". Xu & Huo (2026) đã chứng minh XAI tăng trust người dùng nhưng chưa có cho tiếng Việt.
+4. **Thiếu sản phẩm đầu-cuối cho end-user:** Tất cả các nhóm phương pháp đều dừng ở mô hình, không có web app cho người dùng cuối (traveler) dùng trực tiếp.
+
+**Bảng ánh xạ Khoảng trống → Mục tiêu cụ thể:**
+
+| Khoảng trống | Mục tiêu giải quyết |
+|-------------|---------------------|
+| Gap 1: Chưa có dataset F&B tiếng Việt có nhãn | **MT1** — Xây dựng data pipeline + dataset ~3.000 review |
+| Gap 1: Chưa có model FRD fine-tune cho F&B VN | **MT2** — Fine-tune PhoBERT-base trên dataset tự xây |
+| Gap 2: Content-only, thiếu behavioral features | **MT3, MT4** — Triển khai Content Module + Behavior Module |
+| Gap 2: Thiếu cơ chế fuse có trọng số tối ưu | **MT5** — Trust Engine 0.6×Content + 0.4×Behavior |
+| Gap 3: Không có XAI/giải thích | **MT5** — Mỗi review có explanation ≥ 3 lý do |
+| Gap 4: Không có sản phẩm web cho end-user | **MT6** — Web application React hoạt động end-to-end |
+| Validation đóng góp từng layer | **MT7** — Ablation study so với baseline |
+| Kiểm chứng thực tế | **MT8** — Case study 3–5 quán thật tại HCM |
 
 ### 3.6. Phương pháp kế thừa và hướng phát triển
 
@@ -235,9 +319,16 @@ Từ khảo sát trên, xác định 4 khoảng trống rõ ràng:
 
 #### Tầng 3 — Manual Review (người gán nhãn chuẩn)
 
-- SV tự gán nhãn thủ công **100% tập test (~500 review)** và **phần LLM/rule mâu thuẫn (~300–500 review)**.
-- Quy tắc: 1 review được ≥ 2 lần review độc lập (SV + LLM) → dùng làm **gold label**.
-- Tính **Cohen's Kappa** giữa heuristic/LLM/manual để báo cáo độ tin cậy gán nhãn (kỳ vọng κ ≥ 0.70 — "substantial agreement").
+**Người thực hiện gán nhãn:**
+- **Sinh viên thực hiện đề tài** (Trương Viết Hiệp): gán nhãn độc lập toàn bộ ~500 review tập test + ~300–500 review có mâu thuẫn từ tầng 1 & 2.
+- **Một sinh viên khác cùng khoa** (annotator thứ 2): gán nhãn độc lập **cùng 500 review tập test** để tính inter-annotator agreement. Không nhìn nhãn của annotator 1.
+- **Giảng viên hướng dẫn**: kiểm tra ngẫu nhiên ~50–100 review borderline, xác nhận guideline, quyết định cuối cùng khi 2 annotator bất đồng.
+
+**Quy trình:**
+- Mỗi review được gán nhãn độc lập bởi ≥ 2 người → dùng làm **gold label**.
+- Nếu 2 annotator bất đồng → đưa lên giảng viên quyết định (arbitration).
+- Tính **Cohen's Kappa** giữa 2 annotator trên tập test 500 review. Kỳ vọng κ ≥ 0.70 ("substantial agreement").
+- Kết quả κ sẽ được báo cáo trong quyển đồ án (Chương 3 — phương pháp).
 
 ### 4.4. Đặc điểm và thống kê dự kiến của tập dữ liệu
 
