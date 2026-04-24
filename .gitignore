@@ -84,5 +84,3 @@ htmlcov/
 .worktrees/
 
 # Document files
-*.docx
-*.pdf
